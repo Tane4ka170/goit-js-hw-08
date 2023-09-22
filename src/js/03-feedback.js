@@ -3,51 +3,50 @@ import throttle from 'lodash.throttle';
 const formInput = document.querySelector('input');
 const formMessage = document.querySelector('textarea');
 const form = document.querySelector('.feedback-form');
-const formState = 'feedback-form-state'
+const formState = 'feedback-form-state';
 
 let formData = {
     email: "",
     message: ""
 };
 
-formChange()
+function saveFormData() {
+    localStorage.setItem(formState, JSON.stringify(formData));
+}
 
-formInput.addEventListener('input', throttle(()=>{
+function loadFormData() {
+    const savedData = JSON.parse(localStorage.getItem(formState));
+    if (savedData) {
+        formData = savedData;
+        formInput.value = formData.email;
+        formMessage.value = formData.message;
+    }
+}
+loadFormData();
+
+formInput.addEventListener('input', throttle(() => {
     formData.email = formInput.value;
-    localStorage.setItem(formState, JSON.stringify(formData))
-},500)
-);
+    saveFormData();
+}, 500));
 
-formMessage.addEventListener('input', throttle(()=>{
+formMessage.addEventListener('input', throttle(() => {
     formData.message = formMessage.value;
-    localStorage.setItem(formState, JSON.stringify(formData))
-},500)
-);
+    saveFormData();
+}, 500));
 
 form.addEventListener("submit", formSubmit);
 
-function formChange(){
-    if (localStorage.getItem(formState)){
-        formData.email = JSON.parse(localStorage.getItem(formState)).email;
-        formData.message = JSON.parse(localStorage.getItem(formState)).message;
-        formInput.value = formData.email;
-        formMessage.value = formData.message;
-    } else{
-        return
-    }
-};
-
 function formSubmit(event) {
     event.preventDefault();
-    if (formInput.value && formMessage.value){
+    if (formInput.value && formMessage.value) {
         console.log(formData);
-        localStorage.clear();
+        localStorage.removeItem(formState);
         event.currentTarget.reset();
         formData = {
             email: "",
             message: ""
-        }
-    } else{
-        alert('Переконайтеся, що всі поля заповнені!')
+        };
+    } else {
+        alert('Переконайтеся, що всі поля заповнені!');
     }
 }
